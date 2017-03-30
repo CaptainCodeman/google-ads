@@ -1,0 +1,30 @@
+{
+  "name": "google-ads",
+  "description": "Google Ad elements",
+  "main": "index.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0-rc.2",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#2.0-preview",
+    "deepmerge": "^1.3.2"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#2.0-preview",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#2.0-preview",
+    "web-component-tester": "v6.0.0-prerelease.5",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0-rc.5"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0-rc.2"
+  },
+  "homepage": "https://github.com/captaincodeman/google-ads",
+  "_release": "3d3b3e9729",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "3d3b3e9729f982f66659ae26246d4ef9fc303ed5"
+  },
+  "_source": "https://github.com/captaincodeman/google-ads.git",
+  "_target": "master",
+  "_originalSource": "captaincodeman/google-ads",
+  "_direct": true
+}
