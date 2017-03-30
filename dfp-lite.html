@@ -1,0 +1,246 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/utils/debounce.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+
+<script src="../deepmerge/index.js"></script>
+
+<!--
+`dfp-lite-ad`
+Google Dfp Lite ad element
+
+@demo demo/index.html
+-->
+
+<dom-module id="dfp-lite-ad">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer.DfpLiteManager = Polymer.DfpLiteManager || {
+        instance: null,
+        requestAvailability: () => {
+          if (!Polymer.DfpLiteManager.instance) {
+            Polymer.DfpLiteManager.instance = document.createElement('dfp-lite-manager');
+            document.documentElement.appendChild(Polymer.DfpLiteManager.instance);
+          }
+        }
+      };
+
+      class DfpLiteManager extends Polymer.Element {
+        static get is() { return 'dfp-lite-manager'; }
+
+        static get properties() {
+          return {
+            cookieOptOut: {
+              type: Boolean
+            },
+            targeting: {
+              type: Object
+            },
+            categoryExclusions: {
+              type: Array
+            },
+            tagForChildDirectedTreatment: {
+              type: Boolean
+            }
+          };
+        }
+
+        constructor() {
+          super();
+
+          if (Polymer.DfpLiteManager.instance) return;
+          Polymer.DfpLiteManager.instance = this;
+
+          this.loadScript = new Promise((resolve, reject) => {
+            let script = document.createElement('script');
+            script.src = 'https://securepubads.g.doubleclick.net/static/glade.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        connectedCallback() {
+          super.connectedCallback()
+          this.setAttribute('hidden', true);
+        }
+
+        render(ad) {
+          // TODO: not 100% certain that passing the ad to render is valid
+          this.loadScript.then(() => window.glade.run(ad));
+        }
+      }
+
+      window.customElements.define(DfpLiteManager.is, DfpLiteManager);
+
+      class DfpLiteAd extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+        static get is() { return 'dfp-lite-ad'; }
+
+        static get properties() {
+          return {
+            adUnitPath: {
+              type: String
+            },
+            clickUrl: {
+              type: String
+            },
+            pageUrl: {
+              type: String
+            },
+            cookieOptOut: {
+              type: Boolean
+            },
+            targeting: {
+              type: Object
+            },
+            categoryExclusions: {
+              type: Array
+            },
+            tagForChildDirectedTreatment: {
+              type: Boolean
+            }
+          };
+        }
+
+        static get observers() {
+          return [
+            '_onPropertiesChanged(adUnitPath, clickUrl, pageUrl, cookieOptOut, targeting, categoryExclusions, tagForChildDirectedTreatment)'
+          ]
+        }
+
+        constructor() {
+          super();
+
+          Polymer.DfpLiteManager.requestAvailability();
+
+          this._onIronResizeBound = this._onIronResize.bind(this);
+          this._onAdFetchedBound = this._onAdFetched.bind(this);
+          this._onAdRenderedBound = this._onAdRendered.bind(this);
+
+          this.ad = document.createElement('div');
+          this.ad.style.position = 'absolute';
+          this.ad.setAttribute('width', 'fill');
+          this.ad.setAttribute('height', 'fill');
+          this.ad.dataset.glade = '';
+
+          // this just makes the "has it resized" code simpler
+          // by removing the need to check for it being undefined
+          this._prev = { width: 0, height: 0 };
+        }
+
+        connectedCallback() {
+          super.connectedCallback()
+
+          this.ad.addEventListener('gladeAdFetched', e => this._onAdFetchedBound, false);
+          this.ad.addEventListener('gladeAdRendered', e => this._onAdRenderedBound, false);
+
+          Polymer.RenderStatus.beforeNextRender(this, () => {
+            document.body.appendChild(this.ad);
+            this._onIronResize();
+          });
+
+          this.addEventListener('iron-resize', this._onIronResizeBound, false);
+        }
+
+        disconnectedCallback() {
+          super.disconnectedCallback();
+
+          console.log('disconnected');
+
+          this.removeEventListener('iron-resize', this._onIronResizeBound);
+
+          Polymer.DfpLiteManager.instance.unregister(this.ad);
+          document.body.removeChild(this.ad);
+          this.ad = undefined;
+
+          this.ad.removeEventListener('gladeAdFetched', e => this._onAdFetchedBound);
+          this.ad.removeEventListener('gladeAdRendered', e => this._onAdRenderedBound);
+        }
+
+        _onPropertiesChanged(adUnitPath, clickUrl, pageUrl, cookieOptOut, targeting, categoryExclusions, tagForChildDirectedTreatment) {
+          this.ad.dataset.adUnitPath = adUnitPath;
+
+          // verge options with manager (i.e. add to or override global settings)
+          let json = deepmerge({
+            cookieOptOut: Polymer.DfpLiteManager.instance.cookieOptOut,
+            targeting: Polymer.DfpLiteManager.instance.targeting,
+            categoryExclusions: Polymer.DfpLiteManager.instance.categoryExclusions,
+            tagForChildDirectedTreatment: this._boolean(Polymer.DfpLiteManager.instance.tagForChildDirectedTreatment)
+          }, {
+            cookieOptOut: cookieOptOut,
+            targeting: targeting,
+            categoryExclusions: categoryExclusions,
+            tagForChildDirectedTreatment:this._boolean(tagForChildDirectedTreatment)
+          });
+
+          this.ad.dataset.json = JSON.stringify(json);
+
+          if (clickUrl) this.ad.dataset.clickUrl = clickUrl;
+          if (pageUrl) this.ad.dataset.pageUrl = pageUrl;
+        }
+
+        _boolean(val) {
+          if (val === true) return 1
+          if (val === false) return 0
+          return undefined;
+        }
+
+        refresh() {
+          this.ad.dataset.fetch = true;
+          while (this.ad.firstChild) {
+            this.ad.removeChild(this.ad.firstChild);
+          }
+          Polymer.DfpLiteManager.instance.render(this.ad);
+        }
+
+        _onAdFetched(e) {
+          this.dispatchEvent(new CustomEvent('dfp-lite-ad-fetched', { bubbles: true, composed: true, detail: e.detail } ));
+        }
+
+        _onAdRendered(e) {
+          this.dispatchEvent(new CustomEvent('dfp-lite-ad-rendered', { bubbles: true, composed: true, detail: e.detail } ));
+        }
+
+        _onIronResize() {
+          let rect = this.getBoundingClientRect();
+
+          // hide ad when *we* are hidden and don't bother resizing
+          if (rect.width === 0 || rect.height === 0) {
+            this.ad.style.display = 'none';
+            return;
+          }
+
+          // show the ad and match the size to our element
+          this.ad.style.display = 'block';
+          this.ad.style.top = rect.top + 'px';
+          this.ad.style.left = rect.left + 'px';
+
+          // if the size has changed, refresh the ad
+          if (rect.width !== this._prev.width || rect.height !== this._prev.height) {
+            this.ad.style.width = rect.width + 'px';
+            this.ad.style.height = rect.height + 'px';
+
+            // TODO: debounce this or the iron-resize itself?
+            // this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeout(500), this.refresh);
+
+            this.refresh();
+          }
+
+          this._prev = rect;
+        }
+      }
+
+      window.customElements.define(DfpLiteAd.is, DfpLiteAd);
+    })();
+  </script>
+</dom-module>

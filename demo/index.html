@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>google-dfp demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../dfp-lite.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+      dfp-lite-ad {
+        background-color: #eee;
+        margin: 20px 0;
+      }
+
+      /* responsive ad sizes */
+      @media (min-width:    0  ) and (min-height:   0  ) { dfp-lite-ad { width: 250px; height: 250px; } }
+      @media (min-width:    0  ) and (min-height: 641px) { dfp-lite-ad { width: 120px; height: 600px; } }
+      @media (min-width:  480px) and (min-height: 641px) { dfp-lite-ad { width: 160px; height: 600px; } }
+      @media (min-width:  960px) and (min-height: 641px) { dfp-lite-ad { width: 300px; height: 600px; } }
+      @media (min-width:    0  ) and (max-height: 640px) { dfp-lite-ad { width: 250px; height: 250px; } }
+      @media (min-width:  320px) and (max-height: 640px) { dfp-lite-ad { width: 300px; height: 250px; } }
+      @media (min-width:  480px) and (max-height: 640px) { dfp-lite-ad { width: 336px; height: 280px; } }
+      @media (min-width: 1024px) and (max-height: 640px) { dfp-lite-ad { width: 728px; height:  90px; } }
+      @media (min-width: 1280px) and (max-height: 640px) { dfp-lite-ad { width: 970px; height:  90px; } }
+
+      dfp-lite-ad::before {
+        content: "Advertisement";
+        position: relative;
+        top: -20px;
+        left: 0;
+        color: #666;
+        font-variant: small-caps;
+        font-size: 12px;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>dfp-lite-ad demo</h3>
+      <p>Try resizing your browser, the ad should adapt to fit.</p>
+      <demo-snippet>
+        <template is="dom-bind" id="demo">
+          <dfp-lite-ad ad-unit-path="/559809888/polymer"></dfp-lite-ad>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>
