@@ -2,7 +2,7 @@ _[Demo and API docs](http://captaincodeman.github.io/google-ads/)_
 
 # Google-Ads
 
-Elements to show Google ads within Polymer apps.
+Polymer elements to show Google ads.
 
 Normal attempts to insert Adsense or Dfp ads into sites that user Polymer /
 WebComponents will often fail due to the ad-scripts being incompatible with
