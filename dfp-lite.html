@@ -195,12 +195,23 @@ Google Dfp Lite ad element
           return undefined;
         }
 
-        refresh() {
+        // clear the ad
+        clear() {
           this.ad.dataset.fetch = true;
           while (this.ad.firstChild) {
             this.ad.removeChild(this.ad.firstChild);
           }
+        }
+
+        // render the ad
+        render() {
           Polymer.DfpLiteManager.instance.render(this.ad);
+        }
+
+        // refresh the ad
+        refresh() {
+          this.clear();
+          this.render();
         }
 
         _onAdFetched(e) {
@@ -212,6 +223,10 @@ Google Dfp Lite ad element
         }
 
         _onIronResize() {
+          this.reposition();
+        }
+
+        reposition() {
           let rect = this.getBoundingClientRect();
 
           // hide ad when *we* are hidden and don't bother resizing
@@ -230,10 +245,12 @@ Google Dfp Lite ad element
             this.ad.style.width = rect.width + 'px';
             this.ad.style.height = rect.height + 'px';
 
-            // TODO: debounce this or the iron-resize itself?
-            // this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeout(500), this.refresh);
+            // when size changes, clear any existing ad content immediately
+            // otherwise it looks strange (the css media sizing happens instantly)
+            this.clear();
 
-            this.refresh();
+            // and debounce any loading in-case we're just travelling past this size
+            this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(60), this.render.bind(this));
           }
 
           this._prev = rect;
