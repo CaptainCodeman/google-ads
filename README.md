@@ -29,7 +29,7 @@ element within any view (keeping it positioned correctly etc...)
 ```
 -->
 ```html
-<dfp-lite-ad ad-unit-path="/559809888/polymer"></dfp-lite-ad>
+<dfp-lite-ad ad-unit-path="/559809888/polymer" style="width:300px;height:250px;"></dfp-lite-ad>
 ```
 
 ### Options
