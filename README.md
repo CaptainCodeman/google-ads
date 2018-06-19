@@ -17,17 +17,6 @@ element within any view (keeping it positioned correctly etc...)
 
 `dfp-lite-ad` is an element to show Google Dfp lite ads within Polymer apps.
 
-<!---
-```
-<custom-element-demo>
-  <template>
-    <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="dfp-lite.html">
-    <next-code-block></next-code-block>
-  </template>
-</custom-element-demo>
-```
--->
 ```html
 <dfp-lite-ad ad-unit-path="/559809888/polymer" style="width:300px;height:250px;"></dfp-lite-ad>
 ```
